@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Calendar from "./components/Calendar";
 
 const C = {
   washi: "#F4F0E6", washiDeep: "#E9E3D2", ai: "#26324F", aiSoft: "#5C6781",
@@ -7,57 +8,59 @@ const C = {
   ok: "#3F7D5E", white: "#FCFAF4",
 };
 
-const TABS = [
-  { key: "print", label: "プリント" },
-  { key: "news", label: "ニュース" },
-  { key: "events", label: "イベント" },
-  { key: "mail", label: "メール" },
-];
-
 export default function Home() {
-  const [tab, setTab] = useState("print");
+  const [tab, setTab] = useState("calendar");
   return (
-    <main style={{ minHeight: "100vh", background: C.washi, color: C.ai, fontFamily: "'Zen Kaku Gothic New', sans-serif", position: "relative" }}>
-      <div aria-hidden style={{ position: "fixed", inset: 0, pointerEvents: "none", backgroundImage: `linear-gradient(${C.line}40 1px, transparent 1px), linear-gradient(90deg, ${C.line}40 1px, transparent 1px)`, backgroundSize: "26px 26px", maskImage: "radial-gradient(ellipse 100% 70% at 50% 0%, #000 50%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 70% at 50% 0%, #000 50%, transparent 100%)" }} />
-
-      <div style={{ position: "relative", maxWidth: 600, margin: "0 auto", padding: "0 18px 80px" }}>
-        <header style={{ padding: "24px 0 6px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <main style={{ minHeight: "100vh", background: C.washi, color: C.ai, fontFamily: "'Zen Kaku Gothic New', sans-serif", position: "relative", paddingBottom: 76 }}>
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 16px" }}>
+        <header style={{ padding: "20px 0 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
             <Mark />
-            <span style={{ fontWeight: 700, fontSize: 17 }}>セカンドブレイン</span>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>セカンドブレイン</span>
           </div>
           <ConnectionDot />
         </header>
 
-        {/* タブ */}
-        <nav style={{ display: "flex", gap: 4, borderBottom: `1px solid ${C.line}`, marginBottom: 22 }}>
-          {TABS.map((t) => {
-            const on = tab === t.key;
-            return (
-              <button key={t.key} onClick={() => setTab(t.key)}
-                style={{ position: "relative", background: "transparent", border: "none", cursor: "pointer", padding: "10px 12px 12px", fontSize: 14, fontWeight: on ? 700 : 500, color: on ? C.ai : C.aiSoft }}>
-                {t.label}
-                {on && <span style={{ position: "absolute", left: 8, right: 8, bottom: -1, height: 2.5, background: C.shu, borderRadius: 2 }} />}
-              </button>
-            );
-          })}
-        </nav>
-
+        {tab === "calendar" && <Calendar />}
         {tab === "print" && <PrintTab />}
-        {tab === "news" && <NewsTab />}
-        {tab === "events" && <EventsTab />}
-        {tab === "mail" && <MailTab />}
+        {tab === "discover" && <DiscoverTab />}
       </div>
+
+      <BottomBar tab={tab} setTab={setTab} />
     </main>
+  );
+}
+
+// ── 下部のアイコンバー ──────────────────
+function BottomBar({ tab, setTab }) {
+  const items = [
+    { key: "calendar", label: "カレンダー", icon: IconCalendar },
+    { key: "print", label: "プリント", icon: IconCamera },
+    { key: "discover", label: "みつける", icon: IconCompass },
+  ];
+  return (
+    <nav style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: C.white, borderTop: `1px solid ${C.line}`, display: "flex", justifyContent: "space-around", padding: "8px 0 max(8px, env(safe-area-inset-bottom))", zIndex: 50 }}>
+      {items.map((it) => {
+        const on = tab === it.key;
+        const Icon = it.icon;
+        return (
+          <button key={it.key} onClick={() => setTab(it.key)}
+            style={{ background: "transparent", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "2px 18px", color: on ? C.shu : C.aiSoft }}>
+            <Icon color={on ? C.shu : C.aiSoft} />
+            <span style={{ fontSize: 10.5, fontWeight: on ? 700 : 500 }}>{it.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 
 // ── プリント ──────────────────
 function PrintTab() {
   return (
-    <section>
-      <h1 style={{ fontSize: 25, fontWeight: 900, margin: "4px 0 8px", lineHeight: 1.4 }}>撮るだけで、締切がカレンダーに。</h1>
-      <p style={{ color: C.aiSoft, fontSize: 15, lineHeight: 1.8, margin: "0 0 24px" }}>
+    <section style={{ marginTop: 6 }}>
+      <h1 style={{ fontSize: 23, fontWeight: 900, margin: "4px 0 8px", lineHeight: 1.4 }}>撮るだけで、締切がカレンダーに。</h1>
+      <p style={{ color: C.aiSoft, fontSize: 14.5, lineHeight: 1.8, margin: "0 0 22px" }}>
         配られたプリントを撮ると、小テストや提出物の締切を読み取って、確認してからカレンダーに入れられます。
       </p>
       <a href="/torikomu" style={{ display: "block", textAlign: "center", background: C.ai, color: C.white, textDecoration: "none", fontWeight: 700, fontSize: 16, padding: "16px", borderRadius: 12 }}>
@@ -67,8 +70,18 @@ function PrintTab() {
   );
 }
 
-// ── ニュース ──────────────────
-function NewsTab() {
+// ── みつける（ニュース＋イベント統合） ──────────────────
+function DiscoverTab() {
+  return (
+    <section style={{ marginTop: 6 }}>
+      <NewsSection />
+      <div style={{ height: 28 }} />
+      <EventsSection />
+    </section>
+  );
+}
+
+function NewsSection() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState(null);
@@ -85,11 +98,11 @@ function NewsTab() {
   useEffect(() => { load(); }, []);
 
   return (
-    <section>
+    <div>
       <SectionHead title="今朝のニュース" desc="AIが要点をまとめました" onReload={load} loading={loading} />
       {mode === "trial" && <TrialNote />}
       {error && <ErrorNote msg={error} onRetry={load} />}
-      {loading && <Skeleton n={3} />}
+      {loading && <Skeleton n={2} />}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {!loading && news.map((n, i) => (
           <div key={i} onClick={() => setOpen(open === i ? null : i)} style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 12, padding: "16px 18px", cursor: "pointer" }}>
@@ -113,12 +126,11 @@ function NewsTab() {
           </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
-// ── イベント ──────────────────
-function EventsTab() {
+function EventsSection() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState(null);
@@ -134,11 +146,11 @@ function EventsTab() {
   useEffect(() => { load(); }, []);
 
   return (
-    <section>
+    <div>
       <SectionHead title="近くのイベント" desc="1ヶ月以内・東京近郊" onReload={load} loading={loading} />
       {mode === "trial" && <TrialNote />}
       {error && <ErrorNote msg={error} onRetry={load} />}
-      {loading && <Skeleton n={3} />}
+      {loading && <Skeleton n={2} />}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {!loading && events.map((ev, i) => (
           <div key={i} style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 12, padding: "16px 18px" }}>
@@ -156,32 +168,16 @@ function EventsTab() {
           </div>
         ))}
       </div>
-    </section>
-  );
-}
-
-// ── メール（準備中） ──────────────────
-function MailTab() {
-  return (
-    <section>
-      <SectionHead title="メール" desc="重要なメールだけ拾います" />
-      <div style={{ background: C.white, border: `1px dashed ${C.aiSoft}66`, borderRadius: 12, padding: "32px 22px", textAlign: "center" }}>
-        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>準備中の機能です</div>
-        <p style={{ color: C.aiSoft, fontSize: 13.5, lineHeight: 1.9, margin: 0 }}>
-          Gmailから提出物やイベントの連絡を拾って、カレンダー追加をおすすめする機能です。<br />
-          メールの読み取りは安全面の確認が必要なため、いまは準備中。大学生向けに広げるときに公開します。
-        </p>
-      </div>
-    </section>
+    </div>
   );
 }
 
 // ── 共通パーツ ──────────────────
 function SectionHead({ title, desc, onReload, loading }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 16 }}>
+    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 14 }}>
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 900, margin: "0 0 2px" }}>{title}</h1>
+        <h1 style={{ fontSize: 19, fontWeight: 900, margin: "0 0 2px" }}>{title}</h1>
         <div style={{ fontSize: 12.5, color: C.aiSoft }}>{desc}</div>
       </div>
       {onReload && (
@@ -230,7 +226,7 @@ function ConnectionDot() {
   }, []);
   const color = state.loading ? C.pencil : state.connected ? C.ok : C.shu;
   return (
-    <span title={state.connected ? "Supabase 接続済み" : "Supabase 未接続"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.aiSoft }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.aiSoft }}>
       <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
       {state.connected ? "接続済み" : state.loading ? "確認中" : "未接続"}
     </span>
@@ -243,6 +239,33 @@ function Mark() {
       <rect x="1" y="1" width="24" height="24" rx="7" fill="#26324F" />
       <path d="M9 8.5c-1.4 0-2.5 1.1-2.5 2.5 0 .5.15.97.4 1.36-.55.43-.9 1.1-.9 1.84 0 1.3 1.05 2.3 2.35 2.3.2 1 1.1 1.75 2.15 1.75 1.21 0 2.2-.98 2.2-2.2V9.7c0-1.21-.99-2.2-2.2-2.2-.36 0-.7.08-1 .25" stroke="#F4F0E6" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M17 8.5c1.4 0 2.5 1.1 2.5 2.5 0 .5-.15.97-.4 1.36.55.43.9 1.1.9 1.84 0 1.3-1.05 2.3-2.35 2.3-.2 1-1.1 1.75-2.15 1.75" stroke="#C0442E" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// アイコン
+function IconCalendar({ color }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke={color} strokeWidth="1.7" />
+      <path d="M3.5 9h17M8 3v3M16 3v3" stroke={color} strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconCamera({ color }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="7" width="18" height="13" rx="2.5" stroke={color} strokeWidth="1.7" />
+      <path d="M8 7l1.5-2.5h5L16 7" stroke={color} strokeWidth="1.7" strokeLinejoin="round" />
+      <circle cx="12" cy="13.5" r="3.5" stroke={color} strokeWidth="1.7" />
+    </svg>
+  );
+}
+function IconCompass({ color }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="8.5" stroke={color} strokeWidth="1.7" />
+      <path d="M15.5 8.5l-2 5-5 2 2-5z" stroke={color} strokeWidth="1.7" strokeLinejoin="round" />
     </svg>
   );
 }

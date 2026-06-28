@@ -1,6 +1,7 @@
 import { supabase, supabaseReady } from "@/lib/supabase";
 
 export async function GET() {
+  // 診断用：環境変数がサーバーから見えているかを詳しく返す
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
